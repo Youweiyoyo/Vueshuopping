@@ -44,47 +44,59 @@ export default {
     return {
       // 登录表单的数据绑定对象
       loginFrom: {
-        username: "",
-        password: "",
+        username: '',
+        password: ''
       },
       loginFromRules: {
         username: [
-          { required: true, message: "请输入用户名称", trigger: "blur" },
+          { required: true, message: '请输入用户名称', trigger: 'blur' },
           {
             min: 3,
             max: 10,
-            message: "长度在 3 到 10 个字符",
-            trigger: "blur",
-          },
+            message: '长度在 3 到 10 个字符',
+            trigger: 'blur'
+          }
         ],
         password: [
-          { required: true, message: "请输入用户名称", trigger: "blur" },
+          { required: true, message: '请输入用户名称', trigger: 'blur' },
           {
             min: 6,
             max: 15,
-            message: "长度在 6 到 15 个字符",
-            trigger: "blur",
-          },
-        ],
-      },
-    };
+            message: '长度在 6 到 15 个字符',
+            trigger: 'blur'
+          }
+        ]
+      }
+    }
   },
   methods: {
     // 点击重置按钮，重置登录表单
     restLoginFrom() {
       // console.log(this);
-      this.$refs.loginFromRef.resetFields();
+      this.$refs.loginFromRef.resetFields()
     },
+    // 确定按钮
     yzFrom() {
-      this.$$refs.loginFromRef.validate(async valid => {
-        if (!valid) return;
+      this.$refs.loginFromRef.validate(async valid => {
+        if (!valid) return
         // 发起请求
-        const result = await this.$http.post("login", this.loginFrom)
-        console.log(result)
-      });
-    },
-  },
-};
+        const { data: res } = await this.$http.post('login', this.loginFrom)
+        console.log(res)
+        if (res.meta.status !== 200) {
+          return this.$message.error('用户名或密码错误，登录失败')
+        }
+        this.$message({
+          message: '登录成功',
+          type: 'success'
+        })
+        // 将获取到的token存放在sessionStorage
+        window.sessionStorage.setItem('token', res.data.token)
+        // 登录成功后跳转主页
+        this.$router.push('/home')
+      })
+    }
+  }
+}
 </script>
 
 <style lang="less" scoped>
@@ -132,4 +144,3 @@ export default {
   box-sizing: border-box;
 }
 </style>
-

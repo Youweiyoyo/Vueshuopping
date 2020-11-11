@@ -1,6 +1,8 @@
 import Vue from 'vue'
 import App from './App.vue'
 import router from './router'
+// 导入全局样式表
+import './assets/css/global.css'
 // 手动配置 element-ui
 import ElementUI from 'element-ui'
 import 'element-ui/lib/theme-chalk/index.css'

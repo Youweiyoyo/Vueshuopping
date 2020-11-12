@@ -11,12 +11,18 @@
     <!-- 页面主体区域 -->
     <el-container>
       <!-- 侧边栏 -->
-      <el-aside width="200px">
+      <el-aside :width="isunfold ? '64px' : '200px'">
+        <div class="togolle-button" @click="unfoldButton">|||</div>
         <!-- 侧边栏菜单区域 -->
         <el-menu
           background-color="#333744"
           text-color="#fff"
           active-text-color="#2a85f6"
+          :unique-opened="true"
+          :collapse="isunfold"
+          :collapse-transition="false"
+          router
+          :default-active="activepath"
         >
           <!-- 外层导航栏一 -->
           <el-submenu
@@ -28,10 +34,12 @@
               <i :class="iconObj[item.id]"></i>
               <span>{{ item.authName }}</span>
             </template>
+            <!-- 二级菜单 -->
             <el-menu-item
-              :index="subItem.id + ''"
+              :index="'/' + subItem.path"
               v-for="subItem in item.children"
               :key="subItem.id"
+              @click="seaveNav('/' + subItem.path)"
             >
               <template slot="title">
                 <i class="el-icon-menu"></i>
@@ -42,7 +50,9 @@
         </el-menu>
       </el-aside>
       <!-- 右侧内容主体 -->
-      <el-main>Main</el-main>
+      <el-main>
+        <router-view></router-view>
+      </el-main>
     </el-container>
   </el-container>
 </template>
@@ -58,19 +68,33 @@ export default {
         125: 'iconfont icon-user',
         103: 'iconfont icon-users',
         101: 'iconfont icon-tijikongjian',
-        102: 'iconfont icon-shangpin',
+        102: 'iconfont icon-danju',
         145: 'iconfont icon-shangpin '
-      }
+      },
+      // 是否折叠
+      isunfold: false,
+      // 被激活的链接地址
+      activepath: ''
     }
   },
   // 定义生命周期函数
   created() {
     this.getMenuList() // 调getMenuList来获取所有的左侧菜单
+    this.activepath = window.sessionStorage.getItem('activepath')
   },
   methods: {
     loginout() {
       window.sessionStorage.clear()
       this.$router.push('login')
+    },
+    // 点击按钮切换菜单的折叠与展开
+    unfoldButton() {
+      this.isunfold = !this.isunfold
+    },
+    // 保存链接的激活状态
+    seaveNav(activepath) {
+      window.sessionStorage.setItem('activepath', activepath)
+      this.activepath = activepath
     },
     // 获取所有的菜单
     async getMenuList() {
@@ -84,7 +108,6 @@ export default {
   }
 }
 </script>
-
 <style lang="less" scoped>
 .el-header {
   background-color: #373d41;
@@ -104,6 +127,9 @@ export default {
 }
 .el-aside {
   background-color: #333744;
+  .el-menu {
+    border-right: none;
+  }
 }
 .el-main {
   background-color: #eaedf1;
@@ -111,5 +137,17 @@ export default {
 .homeContainer {
   width: 100%;
   height: 100%;
+}
+.iconfont {
+  margin-right: 10px;
+}
+.togolle-button {
+  font-size: 10px;
+  line-height: 24px;
+  color: #fff;
+  background-color: #ff6600;
+  text-align: center;
+  letter-spacing: 0.2em;
+  cursor: pointer;
 }
 </style>

@@ -4,6 +4,10 @@ import VueRouter from 'vue-router'
 import Login from '../components/login.vue'
 // 导入主页组件
 import Home from '../components/home.vue'
+// 定义欢迎路由
+import Welcom from '../components/Welcome.vue'
+// 定义用户路由
+import user from '../components/User/Users.vue'
 
 Vue.use(VueRouter)
 
@@ -11,7 +15,15 @@ const router = new VueRouter({
   routes: [
     { path: '/', redirect: '/login' }, // 重定向
     { path: '/login', component: Login }, // 定义路由规则
-    { path: '/home', component: Home } // 定义路由规则
+    {
+      path: '/home',
+      component: Home,
+      redirect: '/Welcome',
+      children: [
+        { path: '/Welcome', component: Welcom }, // 定义欢迎路由]}
+        { path: '/users', component: user }
+      ]
+    }
   ]
 })
 // 注册路由

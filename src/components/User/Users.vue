@@ -49,11 +49,13 @@
           </template>
         </el-table-column>
         <el-table-column label="操作" width="210px">
-          <template>
+          <template slot-scope="scope">
+            <!-- 修改用户信息按钮 -->
             <el-button
               type="primary"
               icon="el-icon-edit"
               sieze="mini"
+              @click="showEditDialog(scope.row.id)"
             ></el-button>
             <el-button
               type="danger"
@@ -120,6 +122,35 @@
       <span slot="footer" class="dialog-footer">
         <el-button @click="addDialogVisible = false">取 消</el-button>
         <el-button type="primary" @click="addUser">确 定</el-button>
+      </span>
+    </el-dialog>
+    <!-- 修改用户信息对话框 -->
+    <el-dialog
+      title="修改用户信息"
+      :visible.sync="editDialogVisible"
+      width="50%"
+    >
+      <el-form
+        :model="editFrom"
+        :rules="editFromRules"
+        ref="editFromRef"
+        label-width="100px"
+      >
+        <el-form-item label="用户名称">
+          <el-input v-model="editFrom.username" disabled></el-input>
+        </el-form-item>
+        <el-form-item label="手机" prop="mobile">
+          <el-input v-model="editFrom.mobile"></el-input>
+        </el-form-item>
+        <el-form-item label="邮箱" prop="email">
+          <el-input v-model="editFrom.email"></el-input>
+        </el-form-item>
+      </el-form>
+      <span slot="footer" class="dialog-footer">
+        <el-button @click="editDialogVisible = false">取 消</el-button>
+        <el-button type="primary" @click="editDialogVisible = false"
+          >确 定</el-button
+        >
       </span>
     </el-dialog>
   </div>
@@ -191,6 +222,21 @@ export default {
           { required: true, message: '请输入手机号码', trigger: 'blur' },
           { validator: checkMobile, trigger: 'blur' }
         ]
+      },
+      // 控制修改用户信息的对话框的显示与否
+      editDialogVisible: false,
+      // 查询到的用户信息对象
+      editFrom: {},
+      // 定义修改用户信息的对话框的正则对象
+      editFromRules: {
+        email: [
+          { required: true, message: '请输入邮箱', trigger: 'blur' },
+          { validator: checkEmail, trigger: 'blur' }
+        ],
+        mobile: [
+          { required: true, message: '请输入手机号码', trigger: 'blur' },
+          { validator: checkMobile, trigger: 'blur' }
+        ]
       }
     }
   },
@@ -252,6 +298,15 @@ export default {
         // 重新获取用户的列表
         this.getUserList()
       })
+    },
+    // 修改用户信息按钮
+    async showEditDialog(id) {
+      this.editDialogVisible = true
+      const { data: res } = await this.$http.get('users/' + id)
+      if (res.meta.status !== 200) {
+        return this.$message.error('获取用户信息失败')
+      }
+      this.editFrom = res.data
     }
   }
 }

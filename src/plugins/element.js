@@ -8,7 +8,6 @@ import {
   header,
   container,
   main,
-  aside,
   Menu,
   MenuItem,
   MenuItemGroup,
@@ -17,7 +16,11 @@ import {
   BreadcrumbItem,
   card,
   row,
-  col
+  col,
+  TableColumn,
+  Switch,
+  Tooltip,
+  Pagination
 } from 'element-ui'
 // 导入弹出框组件
 Vue.use(Button)
@@ -36,4 +39,8 @@ Vue.use(BreadcrumbItem)
 Vue.use(card)
 Vue.use(row)
 Vue.use(col)
+Vue.use(TableColumn)
+Vue.use(Switch)
+Vue.use(Tooltip)
+Vue.use(Pagination)
 Vue.prototype.$message = Message

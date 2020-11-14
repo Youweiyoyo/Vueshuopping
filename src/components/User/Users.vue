@@ -57,10 +57,12 @@
               sieze="mini"
               @click="showEditDialog(scope.row.id)"
             ></el-button>
+            <!-- 删除用户信息 -->
             <el-button
               type="danger"
               icon="el-icon-delete"
               sieze="mini"
+              @click="removeUserDeleteId(scope.row.id)"
             ></el-button>
             <el-tooltip
               class="item"
@@ -129,6 +131,7 @@
       title="修改用户信息"
       :visible.sync="editDialogVisible"
       width="50%"
+      @close="EditDialogClosed"
     >
       <el-form
         :model="editFrom"
@@ -148,9 +151,7 @@
       </el-form>
       <span slot="footer" class="dialog-footer">
         <el-button @click="editDialogVisible = false">取 消</el-button>
-        <el-button type="primary" @click="editDialogVisible = false"
-          >确 定</el-button
-        >
+        <el-button type="primary" @click="editUser">确 定</el-button>
       </span>
     </el-dialog>
   </div>
@@ -307,6 +308,57 @@ export default {
         return this.$message.error('获取用户信息失败')
       }
       this.editFrom = res.data
+    },
+    // 监听修改用户表单的重置
+    EditDialogClosed() {
+      this.$refs.editFromRef.resetFields()
+    },
+    // 修改用户的表单提交和预验证和修改用户的数据
+    editUser() {
+      this.$refs.editFromRef.validate(async valid => {
+        if (!valid) {
+          return this.$message.error('请填写正确的用户信息')
+        }
+        // 发起修改用户信息的数据请求
+        const { data: res } = await this.$http.put(
+          'users/' + this.editFrom.id,
+          { email: this.editFrom.email, mobile: this.editFrom.mobile }
+        )
+        if (res.meta.status !== 200) {
+          return this.$message.error('修改用户信息失败')
+        }
+        // 关闭对话框窗口
+        this.editDialogVisible = false
+        // 重新渲染列表
+        this.getUserList()
+        // 修改成功提示弹窗
+        this.$message.success('修改成功')
+      })
+    },
+    // 根据Id删除用户数据
+    async removeUserDeleteId(id) {
+      console.log(id)
+      // 先弹框提示，是否删除数据
+      const confirmResf = await this.$confirm(
+        '此操作将永久删除该文件, 是否继续?',
+        '提示',
+        {
+          confirmButtonText: '确定',
+          cancelButtonText: '取消',
+          type: 'warning'
+        }
+      ).catch(res => res)
+      console.log(confirmResf)
+      if (confirmResf !== 'confirm') {
+        return this.$message.info('操作已经取消')
+      }
+      // 发起请求删除id对应的用户信息
+      const { data: res } = await this.$http.delete('users/' + id)
+      if (res.meta.status !== 200) {
+        return this.$message.error('删除用户失败')
+      }
+      this.$message.success('删除成功')
+      this.getUserList()
     }
   }
 }

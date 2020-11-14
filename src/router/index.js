@@ -8,7 +8,10 @@ import Home from '../components/home.vue'
 import Welcom from '../components/Welcome.vue'
 // 定义用户路由
 import user from '../components/User/Users.vue'
-
+// 定义用户权限的路由
+import Rights from '../components/power/Rights.vue'
+// 定义角色列表的路由
+import rose from '../components/power/Rose.vue'
 Vue.use(VueRouter)
 
 const router = new VueRouter({
@@ -20,8 +23,10 @@ const router = new VueRouter({
       component: Home,
       redirect: '/Welcome',
       children: [
-        { path: '/Welcome', component: Welcom }, // 定义欢迎路由]}
-        { path: '/users', component: user }
+        { path: '/Welcome', component: Welcom }, // 定义欢迎路由
+        { path: '/users', component: user },
+        { path: '/rights', component: Rights }, // 定义用户权限的路由
+        { path: '/roles', component: rose } // 定义用户角色的路由
       ]
     }
   ]

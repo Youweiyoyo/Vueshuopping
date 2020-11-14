@@ -357,7 +357,9 @@ export default {
       if (res.meta.status !== 200) {
         return this.$message.error('删除用户失败')
       }
+      // 删除成功弹窗
       this.$message.success('删除成功')
+      // 重新渲染页面
       this.getUserList()
     }
   }

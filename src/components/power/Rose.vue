@@ -65,7 +65,7 @@
           <el-table-column label="角色名称" prop="roleName"></el-table-column>
           <el-table-column label="角色描述" prop="roleDesc"></el-table-column>
           <el-table-column label="操作" width="340px">
-            <template>
+            <template slot-scope="scope">
               <!-- 编辑按钮 -->
               <el-button type="primary" icon="el-icon-edit">编辑</el-button>
               <!-- 删除按钮 -->
@@ -74,7 +74,7 @@
               <el-button
                 type="warning"
                 icon="el-icon-setting"
-                @click="authoritydistribution"
+                @click="authoritydistribution(scope.row)"
                 >分配权限</el-button
               >
             </template>
@@ -83,7 +83,12 @@
       </el-row>
     </el-card>
     <!-- 分配权限管理的对话框 -->
-    <el-dialog title="提示" :visible.sync="authoritydialogVisible" width="50%">
+    <el-dialog
+      title="提示"
+      :visible.sync="authoritydialogVisible"
+      width="50%"
+      @close="clearDefkeys()"
+    >
       <!-- 树形控件 -->
       <el-tree
         :data="resiList"
@@ -92,12 +97,11 @@
         node-key="id"
         default-expand-all
         :default-checked-keys="defkeys"
+        ref="treeRef"
       ></el-tree>
       <span slot="footer" class="dialog-footer">
         <el-button @click="authoritydialogVisible = false">取 消</el-button>
-        <el-button type="primary" @click="authoritydialogVisible = false"
-          >确 定</el-button
-        >
+        <el-button type="primary" @click="treeSub">确 定</el-button>
       </span>
     </el-dialog>
   </div>
@@ -116,7 +120,10 @@ export default {
         label: 'authName',
         children: 'children'
       },
-      defkeys: [105, 116]
+      //  角色下所有三级权限的id
+      defkeys: [],
+      // 当前即将分配权限的角色id
+      roleId: ''
     }
   },
   // 生命周期函数
@@ -156,7 +163,8 @@ export default {
       role.children = res.data
     },
     // 分配权限的处理函数
-    async authoritydistribution() {
+    async authoritydistribution(role) {
+      this.roleId = role.id
       // 获取所有权限的数据
       const { data: res } = await this.$http.get('rights/tree')
       if (res.meta.status !== 200) {
@@ -164,8 +172,43 @@ export default {
       }
       // 获取到的权限数据保存在resiList中
       this.resiList = res.data
+      // 递归调用获取三级节点的所有权限
+      this.getLeafkeys(role, this.defkeys)
       this.authoritydialogVisible = true
       console.log(this.resiList)
+    },
+    //  // 通过递归的形式，获取角色下所有三级权限的id，并保存到defkeys数组中
+    getLeafkeys(node, arr) {
+      if (!node.children) {
+        // 如果当前node节点不包含children属性，则是三级节点
+        return arr.push(node.id)
+      }
+      // 遍历node.children
+      node.children.forEach(item => this.getLeafkeys(item, arr))
+    },
+    // close关闭Tag标签时触发
+    // 监听分配权限列表的close事件，触发事件，清除数组
+    clearDefkeys() {
+      this.defkeys = []
+    },
+    // 点击确定提交选择的用户权限
+    async treeSub() {
+      const keys = [
+        // 获取到所有已经选中的分配权限的数组
+        ...this.$refs.treeRef.getCheckedKeys(),
+        ...this.$refs.treeRef.getHalfCheckedKeys()
+      ]
+      const strId = keys.join(',')
+      const { data: res } = await this.$http.post(
+        `roles/${this.roleId}/rights`,
+        { rids: strId }
+      )
+      if (res.meta.status !== 200) {
+        return this.$message.error('分配权限失败')
+      }
+      this.$message.success('分配用户权限成功！')
+      this.getRoseList()
+      this.authoritydialogVisible = false
     }
   }
 }

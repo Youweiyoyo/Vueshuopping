@@ -5,6 +5,8 @@ import router from './router'
 import './assets/fonts/iconfont.css'
 // 导入全局样式表
 import './assets/css/global.css'
+// 导入Vue插件
+import TreeTable from 'vue-table-with-tree-grid'
 // 导入axios
 import axios from 'axios'
 import 'element-ui/lib/theme-chalk/index.css'
@@ -21,6 +23,7 @@ Vue.prototype.$http = axios
 // 手动配置 element-ui
 Vue.use(ElementUI)
 Vue.config.productionTip = false
+Vue.component('tree-table', TreeTable) // 注册全局可用的插件
 new Vue({
   router,
   render: h => h(App)

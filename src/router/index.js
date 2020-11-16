@@ -14,6 +14,8 @@ import Rights from '../components/power/Rights.vue'
 import rose from '../components/power/Rose.vue'
 // 定义商品分类的组件
 import cate from '../components/goods/Cate.vue'
+// 定义分类参数组件
+import params from '../components/goods/params.vue'
 Vue.use(VueRouter)
 
 const router = new VueRouter({
@@ -29,7 +31,8 @@ const router = new VueRouter({
         { path: '/users', component: user },
         { path: '/rights', component: Rights }, // 定义用户权限的路由
         { path: '/roles', component: rose }, // 定义用户角色的路由
-        { path: '/categories', component: cate } // 定义商品分类组件
+        { path: '/categories', component: cate }, // 定义商品分类组件
+        { path: '/params', component: params } // 定义分类参数组件
       ]
     }
   ]

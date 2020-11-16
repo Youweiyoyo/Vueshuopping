@@ -64,7 +64,12 @@
       </el-pagination>
     </el-card>
     <!-- 添加按钮对话框 -->
-    <el-dialog title="添加用户" :visible.sync="addDialog" width="50%">
+    <el-dialog
+      title="添加用户"
+      :visible.sync="addDialog"
+      width="50%"
+      @close="addcateDialogClose"
+    >
       <el-form
         :model="addCataForm"
         :rules="cataRules"
@@ -74,11 +79,19 @@
         <el-form-item label="分类名称" prop="cat_name">
           <el-input v-model="addCataForm.cat_name"></el-input>
         </el-form-item>
-        <el-form-item label="父级分类"> </el-form-item>
+        <el-form-item label="父级分类">
+          <el-cascader
+            v-model="catemodel"
+            :options="parentCateList"
+            :props="cascaderProps"
+            @change="cateChange"
+            clearable
+          ></el-cascader>
+        </el-form-item>
       </el-form>
       <span slot="footer" class="dialog-footer">
         <el-button @click="addDialog = false">取 消</el-button>
-        <el-button type="primary" @click="addDialog = false">确 定</el-button>
+        <el-button type="primary" @click="addCateDialogFrom">确 定</el-button>
       </span>
     </el-dialog>
   </div>
@@ -139,7 +152,16 @@ export default {
         ]
       },
       // 获取到的父级分类所有数据列表
-      parentCateList: []
+      parentCateList: [],
+      // 级联选择器配置对象
+      cascaderProps: {
+        expandTrigger: 'hover',
+        value: 'cat_id', // 具体选中的某个值的属性
+        label: 'cat_name', // 看到的某个属性
+        children: 'children' // 父子嵌套用的某个属性
+      },
+      // 选中的父级分类的id数组
+      catemodel: []
     }
   },
   created() {
@@ -186,6 +208,48 @@ export default {
         return this.$message.error('获取父级分类数据失败')
       }
       this.parentCateList = res.data
+    },
+    // 级联选择器发生变化后的事件
+    cateChange() {
+      // 如果catemodel数组中的lenght大于0，证明选中的父级分类
+      // 反之，就说明没有选中任何父级分类
+      if (this.catemodel.length > 0) {
+        // 父级分类的id
+        this.addCataForm.cat_pid = this.catemodel[this.catemodel.length - 1]
+        // 为当前分类的等级赋值
+        this.addCataForm.cat_level = this.catemodel.length
+        return false
+      } else {
+        // 父级分类的id
+        this.addCataForm.cat_pid = 0
+        // 为当前分类的等级赋值
+        this.addCataForm.cat_level = 0
+      }
+    },
+    // 监听对话框的关闭事件，清空表单数据
+    addcateDialogClose() {
+      this.$refs.cataRef.resetFields()
+      this.catemodel = []
+      this.addCataForm.cat_pid = 0
+      this.addCataForm.cat_level = 0
+    },
+    // 点击确定提交表单事件
+    addCateDialogFrom() {
+      this.$refs.cataRef.validate(async valid => {
+        if (!valid) {
+          return false
+        }
+        const { data: res } = await this.$http.post(
+          'categories',
+          this.addCataForm
+        )
+        if (res.meta.status !== 201) {
+          return this.$message.error('添加分类失败')
+        }
+        this.$message.success('添加分类成功')
+        this.getCatelist()
+        this.addDialog = false
+      })
     }
   }
 }
@@ -193,5 +257,8 @@ export default {
 <style lang="less" scoped>
 .treeTable {
   margin-top: 15px;
+}
+.el-cascader {
+  width: 100%;
 }
 </style>

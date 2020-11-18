@@ -40,7 +40,35 @@
           >
           <el-table :data="manyTabteData" border stripe>
             <!-- 展开行 -->
-            <el-table-column type="expand"></el-table-column>
+            <el-table-column type="expand">
+              <template slot-scope="scope">
+                <el-tag
+                  v-for="(item, i) in scope.row.attr_vals"
+                  :key="i"
+                  closable
+                  >{{ item }}</el-tag
+                >
+                <!-- 输入文本框 -->
+                <el-input
+                  class="input-new-tag"
+                  v-if="inputVisible"
+                  v-model="inputValue"
+                  ref="saveTagInput"
+                  size="small"
+                  @keyup.enter.native="handleInputConfirm"
+                  @blur="handleInputConfirm"
+                >
+                </el-input>
+                <!-- 添加的按钮 -->
+                <el-button
+                  v-else
+                  class="button-new-tag"
+                  size="small"
+                  @click="showInput"
+                  >+ New Tag</el-button
+                >
+              </template>
+            </el-table-column>
             <!-- 索引列 -->
             <el-table-column type="index"></el-table-column>
             <el-table-column
@@ -194,7 +222,11 @@ export default {
         attr_name: [
           { required: true, message: '请输入参数名称', trigger: 'blur' }
         ]
-      }
+      },
+      // 按钮与文本框的切换
+      inputVisible: false,
+      // 文本框中输入的内容
+      inputValue: ''
     }
   },
   created() {
@@ -234,6 +266,9 @@ export default {
       if (res.meta.status !== 200) {
         return this.$message.error('获取商品列表参数失败')
       }
+      res.data.forEach(item => {
+        item.attr_vals = item.attr_vals ? item.attr_vals.split(',') : []
+      })
       console.log(res.data)
       if (this.activeName === 'many') {
         this.manyTabteData = res.data
@@ -332,6 +367,12 @@ export default {
       }
       this.$message.success('删除参数成功')
       this.getCateList()
+    },
+    // 文本框失去焦点或按下回车触发
+    handleInputConfirm() {},
+
+    showInput() {
+      this.inputVisible = true
     }
   },
 
@@ -365,5 +406,11 @@ export default {
 <style lang="less" scoped>
 .cat_opt {
   margin-top: 15px;
+}
+.el-tag {
+  margin: 5px;
+}
+.input-new-tag{
+  width: 120px;
 }
 </style>

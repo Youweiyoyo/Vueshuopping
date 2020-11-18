@@ -48,11 +48,19 @@
               prop="attr_name"
             ></el-table-column>
             <el-table-column label="参数名称" prop="attr_name">
-              <template>
-                <el-button type="primary" icon="el-icon-edit " size="mini"
+              <template slot-scope="scope">
+                <el-button
+                  type="primary"
+                  icon="el-icon-edit "
+                  size="mini"
+                  @click="showEditForm(scope.row.attr_id)"
                   >编辑按钮</el-button
                 >
-                <el-button type="warning" icon="el-icon-delete" size="mini"
+                <el-button
+                  type="warning"
+                  icon="el-icon-delete"
+                  size="mini"
+                  @click="deldata(scope.row.attr_id)"
                   >删除按钮</el-button
                 >
               </template>
@@ -77,11 +85,19 @@
               prop="attr_name"
             ></el-table-column>
             <el-table-column label="参数名称" prop="attr_name">
-              <template>
-                <el-button type="primary" icon="el-icon-edit " size="mini"
+              <template slot-scope="scope">
+                <el-button
+                  type="primary"
+                  icon="el-icon-edit "
+                  size="mini"
+                  @click="showEditForm(scope.row.attr_id)"
                   >编辑按钮</el-button
                 >
-                <el-button type="warning" icon="el-icon-delete" size="mini"
+                <el-button
+                  type="warning"
+                  icon="el-icon-delete"
+                  size="mini"
+                  @click="deldata(scope.row.attr_id)"
                   >删除按钮</el-button
                 >
               </template>
@@ -90,28 +106,48 @@
         </el-tab-pane>
       </el-tabs>
     </el-card>
-    <!-- Dialog 对话框 -->
+    <!-- 添加 Dialog 对话框 -->
     <el-dialog
       :title="'添加' + titleText"
       :visible.sync="addDialogVisible"
       width="50%"
+      @close="addDialogClose"
     >
       <el-form
-        :model="ruleForm"
-        :rules="rules"
-        ref="ruleForm"
+        :model="addForm"
+        :rules="addFromRules"
+        ref="addFormRef"
         label-width="100px"
-        class="demo-ruleForm"
       >
-        <el-form-item label="活动名称" prop="name">
-          <el-input v-model="ruleForm.name"></el-input>
+        <el-form-item :label="titleText" prop="attr_name">
+          <el-input v-model="addForm.attr_name"></el-input>
         </el-form-item>
       </el-form>
       <span slot="footer" class="dialog-footer">
         <el-button @click="addDialogVisible = false">取 消</el-button>
-        <el-button type="primary" @click="addDialogVisible = false"
-          >确 定</el-button
-        >
+        <el-button type="primary" @click="addParams">确 定</el-button>
+      </span>
+    </el-dialog>
+    <!-- 编辑 Dialog 对话框 -->
+    <el-dialog
+      :title="'修改' + titleText"
+      :visible.sync="editDialogVisible"
+      width="50%"
+      @close="editDialogClose"
+    >
+      <el-form
+        :model="editForm"
+        :rules="editFromRules"
+        ref="editFormRef"
+        label-width="100px"
+      >
+        <el-form-item :label="titleText" prop="attr_name">
+          <el-input v-model="editForm.attr_name"></el-input>
+        </el-form-item>
+      </el-form>
+      <span slot="footer" class="dialog-footer">
+        <el-button @click="editDialogVisible = false">取 消</el-button>
+        <el-button type="primary" @click="editParams">确 定</el-button>
       </span>
     </el-dialog>
   </div>
@@ -138,7 +174,27 @@ export default {
       //  静态属性的数据
       onlyTabteData: [],
       // 控制对话框的显示与隐藏
-      addDialogVisible: false
+      addDialogVisible: false,
+      // 添加参数的表单数据对象
+      addForm: {
+        attr_name: ''
+      },
+      // 添加表单的验证规则对象
+      addFromRules: {
+        attr_name: [
+          { required: true, message: '请输入参数名称', trigger: 'blur' }
+        ]
+      },
+      // 控制修改的对话框
+      editDialogVisible: false,
+      // 编辑表单的数据对象
+      editForm: {},
+      // 编辑表单的验证规则
+      editFromRules: {
+        attr_name: [
+          { required: true, message: '请输入参数名称', trigger: 'blur' }
+        ]
+      }
     }
   },
   created() {
@@ -184,6 +240,98 @@ export default {
       } else {
         this.onlyTabteData = res.data
       }
+    },
+    // 对话框的close事件
+    addDialogClose() {
+      this.$refs.addFormRef.resetFields()
+      this.getCateList()
+    },
+    // 点击对话框的确定按钮提交参数
+    addParams() {
+      console.log(this.$refs)
+      console.log(this.addForm.attr_name)
+      this.$refs.addFormRef.validate(async valid => {
+        if (!valid) {
+          return
+        }
+        const { data: res } = await this.$http.post(
+          `categories/${this.cateId}/attributes`,
+          {
+            attr_name: this.addForm.attr_name,
+            attr_sel: this.activeName
+          }
+        )
+        console.log(res.data)
+        if (res.meta.status !== 201) {
+          return this.$message.error(res.meta.msg)
+        }
+        this.$message.success('添加参数成功')
+        this.addDialogVisible = false
+      })
+    },
+    // 编辑数据的对话框函数
+    async showEditForm(attrId) {
+      const { data: res } = await this.$http.get(
+        `categories/${this.cateId}/attributes/${attrId}`,
+        {
+          params: { attr_sel: this.activeName }
+        }
+      )
+      if (res.meta.status !== 200) {
+        return this.$message.error('获取参数据信息失败')
+      }
+      this.editForm = res.data
+      this.editDialogVisible = true
+    },
+    //  编辑数据的colse事件
+    editDialogClose() {
+      // 清空对话框
+      this.$refs.editFormRef.resetFields()
+    },
+    // 提交修改数据
+    editParams() {
+      this.$refs.editFormRef.validate(async valid => {
+        if (!valid) {
+          return
+        }
+        const { data: res } = await this.$http.put(
+          `categories/${this.cateId}/attributes/${this.editForm.attr_id}`,
+          {
+            attr_name: this.editForm.attr_name,
+            attr_sel: this.activeName
+          }
+        )
+        if (res.meta.status !== 200) {
+          return this.$message.error('修改参数失败')
+        }
+        this.$message.success('修改数据成功')
+        this.getCateList()
+        this.editDialogVisible = false
+      })
+    },
+    // 删除数据
+    async deldata(attrId) {
+      const confirmReset = await this.$confirm(
+        '此操作将永久删除该参数, 是否继续?',
+        '提示',
+        {
+          confirmButtonText: '确定',
+          cancelButtonText: '取消',
+          type: 'warning'
+        }
+      ).catch(err => err)
+      if (confirmReset !== 'confirm') {
+        return this.$message.info('已取消了这次删除操作')
+      }
+      // 删除业务逻辑
+      const { data: res } = await this.$http.delete(
+        `categories/${this.cateId}/attributes/${attrId}`
+      )
+      if (res.meta.status !== 200) {
+        return this.$message.error('删除失败')
+      }
+      this.$message.success('删除参数成功')
+      this.getCateList()
     }
   },
 

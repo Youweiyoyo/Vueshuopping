@@ -55,8 +55,8 @@
                   v-model="scope.row.inputValue"
                   ref="saveTagInput"
                   size="small"
-                  @keyup.enter.native="handleInputConfirm"
-                  @blur="handleInputConfirm"
+                  @keyup.enter.native="handleInputConfirm(scope.row)"
+                  @blur="handleInputConfirm(scope.row)"
                 >
                 </el-input>
                 <!-- 添加的按钮 -->
@@ -369,8 +369,28 @@ export default {
       this.getCateList()
     },
     // 文本框失去焦点或按下回车触发
-    handleInputConfirm() {
-      console.log('ok')
+    async handleInputConfirm(row) {
+      if (row.inputValue.trim().length === 0) {
+        row.inputValue = ''
+        row.inputVisible = false
+        return false
+      }
+      row.attr_vals.push(row.inputValue.trim())
+      row.inputValue = ''
+      row.inputVisible = false
+      // 需要发起请求，保存参数
+      const { data: res } = await this.$http.put(
+        `categories/${this.cateId}/attributes/${row.attrId}`,
+        {
+          attr_name: row.attr_name,
+          attr_sel: row.attr_sel,
+          attr_vals: row.attr_vals.join(',')
+        }
+      )
+      if (res.meta.status !== 200) {
+        return this.$message.error('修改参数项失败')
+      }
+      this.$message.success('修改参数项成功')
     },
     // 显示输入框
     showInput(row) {

@@ -46,6 +46,7 @@
                   v-for="(item, i) in scope.row.attr_vals"
                   :key="i"
                   closable
+                  @close="hadleclose(i, scope.row)"
                   >{{ item }}</el-tag
                 >
                 <!-- 输入文本框 -->
@@ -65,7 +66,7 @@
                   class="button-new-tag"
                   size="small"
                   @click="showInput(scope.row)"
-                  >+ New Tag</el-button
+                  >添加新标签</el-button
                 >
               </template>
             </el-table-column>
@@ -105,7 +106,36 @@
           >
           <el-table :data="onlyTabteData" border stripe>
             <!-- 展开行 -->
-            <el-table-column type="expand"></el-table-column>
+            <el-table-column type="expand">
+              <template slot-scope="scope">
+                <el-tag
+                  v-for="(item, i) in scope.row.attr_vals"
+                  :key="i"
+                  closable
+                  @close="hadleclose(i, scope.row)"
+                  >{{ item }}</el-tag
+                >
+                <!-- 输入文本框 -->
+                <el-input
+                  class="input-new-tag"
+                  v-if="scope.row.inputVisible"
+                  v-model="scope.row.inputValue"
+                  ref="saveTagInput"
+                  size="small"
+                  @keyup.enter.native="handleInputConfirm(scope.row)"
+                  @blur="handleInputConfirm(scope.row)"
+                >
+                </el-input>
+                <!-- 添加的按钮 -->
+                <el-button
+                  v-else
+                  class="button-new-tag"
+                  size="small"
+                  @click="showInput(scope.row)"
+                  >添加新标签</el-button
+                >
+              </template>
+            </el-table-column>
             <!-- 索引列 -->
             <el-table-column type="index"></el-table-column>
             <el-table-column
@@ -252,6 +282,8 @@ export default {
       //  整明选中的不是三级分类
       if (this.scaledCateKeys.length !== 3) {
         this.scaledCateKeys = []
+        this.onlyTabteData = []
+        this.manyTabteData = []
         return
       }
       const { data: res } = await this.$http.get(
@@ -378,9 +410,12 @@ export default {
       row.attr_vals.push(row.inputValue.trim())
       row.inputValue = ''
       row.inputVisible = false
+      this.seaveAttrvals(row)
+    },
+    async seaveAttrvals(row) {
       // 需要发起请求，保存参数
       const { data: res } = await this.$http.put(
-        `categories/${this.cateId}/attributes/${row.attrId}`,
+        `categories/${this.cateId}/attributes/${row.attr_id}`,
         {
           attr_name: row.attr_name,
           attr_sel: row.attr_sel,
@@ -399,6 +434,11 @@ export default {
       this.$nextTick(_ => {
         this.$refs.saveTagInput.$refs.input.focus()
       })
+    },
+    // 删除对应的tag标签
+    hadleclose(i, row) {
+      row.attr_vals.splice(i, 1)
+      this.seaveAttrvals(row)
     }
   },
 

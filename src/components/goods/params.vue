@@ -51,8 +51,8 @@
                 <!-- 输入文本框 -->
                 <el-input
                   class="input-new-tag"
-                  v-if="inputVisible"
-                  v-model="inputValue"
+                  v-if="scope.row.inputVisible"
+                  v-model="scope.row.inputValue"
                   ref="saveTagInput"
                   size="small"
                   @keyup.enter.native="handleInputConfirm"
@@ -64,7 +64,7 @@
                   v-else
                   class="button-new-tag"
                   size="small"
-                  @click="showInput"
+                  @click="showInput(scope.row)"
                   >+ New Tag</el-button
                 >
               </template>
@@ -222,11 +222,8 @@ export default {
         attr_name: [
           { required: true, message: '请输入参数名称', trigger: 'blur' }
         ]
-      },
-      // 按钮与文本框的切换
-      inputVisible: false,
-      // 文本框中输入的内容
-      inputValue: ''
+      }
+      // inputVisible: false
     }
   },
   created() {
@@ -268,6 +265,9 @@ export default {
       }
       res.data.forEach(item => {
         item.attr_vals = item.attr_vals ? item.attr_vals.split(',') : []
+        // 拿到这一行的inputVisible修改为false
+        item.inputVisible = false
+        item.inputValue = ''
       })
       console.log(res.data)
       if (this.activeName === 'many') {
@@ -369,10 +369,16 @@ export default {
       this.getCateList()
     },
     // 文本框失去焦点或按下回车触发
-    handleInputConfirm() {},
-
-    showInput() {
-      this.inputVisible = true
+    handleInputConfirm() {
+      console.log('ok')
+    },
+    // 显示输入框
+    showInput(row) {
+      row.inputVisible = true
+      // $nextTick方法的作用，就是当页面上的元素被重新渲染之后，才会指定回调函数中的代码
+      this.$nextTick(_ => {
+        this.$refs.saveTagInput.$refs.input.focus()
+      })
     }
   },
 
@@ -410,7 +416,7 @@ export default {
 .el-tag {
   margin: 5px;
 }
-.input-new-tag{
+.input-new-tag {
   width: 120px;
 }
 </style>

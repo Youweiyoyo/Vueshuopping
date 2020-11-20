@@ -31,7 +31,8 @@ import {
   Alert,
   Tabs,
   Tabpane,
-  Steps
+  Steps,
+  Step
 } from 'element-ui'
 // 导入弹出框组件
 Vue.use(Button)
@@ -64,5 +65,6 @@ Vue.use(Alert)
 Vue.use(Tabs)
 Vue.use(Tabpane)
 Vue.use(Steps)
+Vue.use(Step)
 Vue.prototype.$message = Message
 Vue.prototype.$confirm = MessageBox

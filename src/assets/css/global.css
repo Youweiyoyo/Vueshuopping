@@ -24,3 +24,10 @@ body,
 .el-cascader-menu__wrap {
   height: 300px !important;
 }
+.el-step__title {
+  font-size: 14px !important; 
+}
+.el-steps {
+  margin: 15px 0;
+}
+

@@ -18,6 +18,8 @@ import cate from '../components/goods/Cate.vue'
 import params from '../components/goods/params.vue'
 // 定义商品组件
 import goods from '../components/goods/goods.vue'
+// 商品列表定义添加商品组件
+import goodsAdd from '../components/goods/goodsAdd.vue'
 Vue.use(VueRouter)
 
 const router = new VueRouter({
@@ -35,7 +37,8 @@ const router = new VueRouter({
         { path: '/roles', component: rose }, // 定义用户角色的路由
         { path: '/categories', component: cate }, // 定义商品分类组件
         { path: '/params', component: params }, // 定义分类参数组件
-        { path: '/goods', component: goods } // 定义商品主页组件
+        { path: '/goods', component: goods }, // 定义商品主页组件
+        { path: '/goods/add', component: goodsAdd } // 定义商品列表添加商品组件
       ]
     }
   ]
